@@ -1,0 +1,5 @@
+aiogram
+git+https://github.com/sm1ky/remnawave-api.git@development
+asyncpg
+dotenv
+sqlalchemy
