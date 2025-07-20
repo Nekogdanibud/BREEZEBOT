@@ -6,7 +6,7 @@ venv/
 .env.local
 .env.*
 !.env.example
-
+.main*
 # Игнорировать кэш Python
 __pycache__/
 *.py[cod]
