@@ -112,7 +112,7 @@ class RemnawaveService:
             "uuid": str(user.uuid),
             "subscription_uuid": str(user.subscription_uuid),
             "short_uuid": user.short_uuid,
-            "username": user.username or f"Подписка {str(user.uuid)[:8]}",
+            "username": user.username,
             "used_traffic_bytes": user.used_traffic_bytes,
             "lifetime_used_traffic_bytes": user.lifetime_used_traffic_bytes,
             "trojan_password": user.trojan_password,

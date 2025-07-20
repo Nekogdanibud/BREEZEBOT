@@ -49,6 +49,7 @@ class PurchasedSubscription(Base):
         index=True
     )
     sub_uuid = Column(String(255), nullable=False)
+    username = Column(String(255), nullable=False)  # Новое поле
     purchase_price = Column(Numeric(10, 2), nullable=True)
     renewal_price = Column(Numeric(10, 2), nullable=True)
     expired_at = Column(DateTime, nullable=False)

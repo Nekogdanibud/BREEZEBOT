@@ -5,42 +5,34 @@ from core.database.crud import get_user_full_data
 from .texts import PROFILE_TEXT
 from .keyboards import get_profile_kb
 from core.database.database import async_session
-from core.api.remnawave_client import remnawave_service
 import logging
+from datetime import datetime
+from core.database.model import User
 
 logger = logging.getLogger(__name__)
 
 async def show_profile(callback: CallbackQuery):
-    """Обработчик показа профиля пользователя"""
+    """Обработчик показа профиля пользователя с данными только из локальной БД"""
     try:
-        # Убираем индикатор загрузки сразу
         await callback.answer()
 
         async with async_session() as session:
+            # Получаем данные пользователя из локальной БД
             user_data = await get_user_full_data(session, callback.from_user.id)
             
-            if not user_data:
+            if not user_data or not isinstance(user_data.get("user"), User):
                 return await callback.answer("❌ Ошибка загрузки профиля", show_alert=True)
             
-            user, _, _ = user_data  # Игнорируем локальные подписки
+            user = user_data["user"]
             
-            # Получаем подписки из Remnawave API
-            remote_subscriptions = await remnawave_service.get_user_by_telegram_id(callback.from_user.id)
-            
-            # Считаем только активные подписки
-            active_subscriptions_count = sum(
-                1 for sub in remote_subscriptions 
-                if not sub.get("error") and sub.get("status") == 'ACTIVE'
-            )
-            
+            # Формируем текст профиля
             profile_text = PROFILE_TEXT.format(
                 username=f"@{user.username}" if user.username else "Не установлен",
-                balance=getattr(user, 'balance', 0),
-                subscriptions_count=active_subscriptions_count  # Только это поле изменено
+                balance=float(user.balance) if user.balance else 0.0,
+                subscriptions_count=user_data.get("subscriptions_count", 0)
             )
             
             try:
-                # Редактируем сообщение
                 await callback.message.edit_text(
                     text=profile_text,
                     reply_markup=get_profile_kb()

@@ -1,0 +1,2593 @@
+=== ДИРЕКТОРИЯ: /home/REMBOT ===
+
+📄 ФАЙЛ: /home/REMBOT/.env
+🔹 СОДЕРЖИМОЕ:
+REMNAWAVE_BASE_URL=https://panel.breezeway.su:8443
+REMNAWAVE_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiM2EzMDUzZjktMWZlOS00ZGJmLWIxNzgtMzdiNDdhNDI1NzBlIiwidXNlcm5hbWUiOm51bGwsInJvbGUiOiJBUEkiLCJpYXQiOjE3NDc3NDQ1NjYsImV4cCI6MTAzODc2NTgxNjZ9.whhKfGrb5jm1htnITSyHM9zi0jz5is36Lq7m5ktnm6s
+REMNAWAVE_ADMIN_USERNAME=nekogdanibud
+REMNAWAVE_ADMIN_PASSWORD=Powered.Mill274327432743
+REMNAWAVE_INBOUND_UUID=0e69eb21-28d8-46d7-aa57-44ee45b14ff5
+REMNAWAVE_USER_UUID=d63c36c9-8fc9-4cb0-82fb-1903e4125e8e
+REMNAWAVE_SHORT_UUID=q9ESpAJta1tNHb2Z
+
+BOT_TOKEN=8002740582:AAFggmFGUNRIf7mRYFu4zVKnp5imQUPh1Qk
+
+# PostgreSQL Database
+DATABASE_URL=postgresql+asyncpg://remnawave_usr:PowMill2743@85.192.48.12:5432/bot
+
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/.gitignore
+🔹 СОДЕРЖИМОЕ:
+# Игнорировать все виртуальные окружения и скрытые .env файлы
+env/
+venv/
+.venv/
+.env
+.env.local
+.env.*
+!.env.example
+
+# Игнорировать кэш Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Игнорировать файлы зависимостей
+*.egg-info/
+*.egg
+dist/
+build/
+
+# Игнорировать файлы IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Игнорировать логи и временные файлы
+*.log
+*.tmp
+*.bak
+
+# Игнорировать специфичные для ОС файлы
+.DS_Store
+Thumbs.db
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/.env.example
+🔹 СОДЕРЖИМОЕ:
+REMNAWAVE_BASE_URL=
+REMNAWAVE_TOKEN=
+REMNAWAVE_ADMIN_USERNAME=
+REMNAWAVE_ADMIN_PASSWORD=
+
+BOT_TOKEN=
+
+# PostgreSQL Database
+DATABASE_URL=postgresql+asyncpg://user:pass@localhost:5432/dbname
+
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/output.txt
+🔹 СОДЕРЖИМОЕ:
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/README.md
+🔹 СОДЕРЖИМОЕ:
+# BREEZEBOT
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/main.py
+🔹 СОДЕРЖИМОЕ:
+import asyncio
+import logging
+import os
+from dotenv import load_dotenv
+
+from aiogram import Bot, Dispatcher
+from aiogram.fsm.storage.memory import MemoryStorage
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+
+from core.middleware import RoleMiddleware
+from core.database.model import Base
+from core.database.database import async_session, engine
+
+# Настройка логгера для SQLAlchemy
+logging.basicConfig()
+logging.getLogger('sqlalchemy.engine').setLevel(logging.DEBUG)
+load_dotenv()
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
+
+async def main():
+    # Проверка переменных окружения
+    if not (BOT_TOKEN := os.getenv("BOT_TOKEN")) or not (DATABASE_URL := os.getenv("DATABASE_URL")):
+        logger.error("Требуемые переменные окружения не установлены!")
+        return
+
+    # Инициализация бота и диспетчера
+    bot = Bot(token=BOT_TOKEN)
+    dp = Dispatcher(storage=MemoryStorage())
+    
+    # Создаем таблицы при старте
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+    # Инициализация пула сессий
+    session_pool = async_sessionmaker(
+        bind=engine,
+        expire_on_commit=False,
+        class_=AsyncSession
+    )
+
+    # Регистрация middleware
+    dp.update.outer_middleware(RoleMiddleware(session_pool=session_pool))
+
+    # Подключение роутеров
+    from modules.common.router import main_menu_router
+    dp.include_router(main_menu_router)
+
+    try:
+        logger.info("Бот запущен")
+        await dp.start_polling(bot)
+    finally:
+        await engine.dispose()
+        logger.info("Подключения к БД закрыты")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
+
+--------------------------------------------------
+
+=== ДИРЕКТОРИЯ: /home/REMBOT/modules ===
+
+=== ДИРЕКТОРИЯ: /home/REMBOT/modules/admin ===
+
+=== ДИРЕКТОРИЯ: /home/REMBOT/modules/admin/mailing ===
+
+📄 ФАЙЛ: /home/REMBOT/modules/admin/mailing/router.py
+🔹 СОДЕРЖИМОЕ:
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/admin/mailing/handlers.py
+🔹 СОДЕРЖИМОЕ:
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/admin/mailing/texts.py
+🔹 СОДЕРЖИМОЕ:
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/admin/mailing/keyboards.py
+🔹 СОДЕРЖИМОЕ:
+
+
+--------------------------------------------------
+
+=== ДИРЕКТОРИЯ: /home/REMBOT/modules/admin/user_list ===
+
+📄 ФАЙЛ: /home/REMBOT/modules/admin/user_list/router.py
+🔹 СОДЕРЖИМОЕ:
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/admin/user_list/handlers.py
+🔹 СОДЕРЖИМОЕ:
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/admin/user_list/texts.py
+🔹 СОДЕРЖИМОЕ:
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/admin/user_list/keyboards.py
+🔹 СОДЕРЖИМОЕ:
+
+
+--------------------------------------------------
+
+=== ДИРЕКТОРИЯ: /home/REMBOT/modules/admin/main_menu ===
+
+📄 ФАЙЛ: /home/REMBOT/modules/admin/main_menu/router.py
+🔹 СОДЕРЖИМОЕ:
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/admin/main_menu/handlers.py
+🔹 СОДЕРЖИМОЕ:
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/admin/main_menu/texts.py
+🔹 СОДЕРЖИМОЕ:
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/admin/main_menu/keyboards.py
+🔹 СОДЕРЖИМОЕ:
+
+
+--------------------------------------------------
+
+=== ДИРЕКТОРИЯ: /home/REMBOT/modules/common ===
+
+📄 ФАЙЛ: /home/REMBOT/modules/common/router.py
+🔹 СОДЕРЖИМОЕ:
+from aiogram import Router, F
+from aiogram.filters import Command
+from .handlers import start_command
+from core.filters import IsNotBanned
+from modules.user.profile.router import profile_router
+from modules.user.subscription.router import subscriptions_router
+from modules.user.control_subscription.router import router as control_subscription_router
+from .texts import MAIN_MENU_CALLBACK
+
+main_menu_router = Router()
+main_menu_router.callback_query.filter(IsNotBanned)
+main_menu_router.include_router(profile_router)
+main_menu_router.include_router(subscriptions_router)
+main_menu_router.include_router(control_subscription_router)
+# Обработка команды /start
+main_menu_router.message.register(
+    start_command,
+    Command("start"),
+    IsNotBanned
+)
+main_menu_router.callback_query.register(
+    start_command,
+    F.data == MAIN_MENU_CALLBACK,
+    IsNotBanned
+)
+
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/common/handlers.py
+🔹 СОДЕРЖИМОЕ:
+from aiogram import F
+from aiogram.types import Message, CallbackQuery
+from .texts import MAIN_MENU_TEXT
+from .keyboards import get_main_menu
+from typing import Union
+import logging
+
+logger = logging.getLogger(__name__)
+
+async def start_command(event: Union[Message, CallbackQuery], role: str):
+    """Обработчик команды /start и возврата в главное меню"""
+    try:
+        if isinstance(event, Message):
+            # Для новых сообщений
+            await event.answer(
+                text=MAIN_MENU_TEXT,
+                reply_markup=get_main_menu(role)
+            )
+        else:
+            # Для callback-запросов
+            await event.message.edit_text(
+                text=MAIN_MENU_TEXT,
+                reply_markup=get_main_menu(role)
+            )
+            await event.answer()  # Убираем индикатор загрузки
+
+    except Exception as e:
+        logger.error(f"Ошибка в start_command: {str(e)}")
+        if isinstance(event, CallbackQuery):
+            await event.answer("⚠️ Ошибка загрузки меню", show_alert=True)
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/common/texts.py
+🔹 СОДЕРЖИМОЕ:
+MAIN_MENU_TEXT = "🎉 Добро пожаловать в главное меню! Выберите раздел:"
+
+# Тексты кнопок
+PROFILE_BUTTON = "👤 Профиль"
+SUBSCRIPTION_BUTTON = "💎 Подписка"
+HELP_BUTTON = "❓ Помощь"
+SUPPORT_BUTTON = "🛎 Поддержка"
+ADMIN_BUTTON = "👑 Админ-центр"
+
+# Callback data
+MAIN_MENU_CALLBACK = "menu:main"
+PROFILE_CALLBACK = "menu:profile"
+SUBSCRIPTION_CALLBACK = "subscriptions"
+HELP_CALLBACK = "menu:help"
+SUPPORT_CALLBACK = "menu:support"
+ADMIN_CALLBACK = "menu:admin"
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/common/keyboards.py
+🔹 СОДЕРЖИМОЕ:
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.types import InlineKeyboardButton
+from .texts import (
+    PROFILE_BUTTON, SUBSCRIPTION_BUTTON, HELP_BUTTON,
+    SUPPORT_BUTTON, ADMIN_BUTTON,
+    PROFILE_CALLBACK, SUBSCRIPTION_CALLBACK, HELP_CALLBACK,
+    SUPPORT_CALLBACK, ADMIN_CALLBACK
+)
+
+def get_main_menu(role: str) -> InlineKeyboardBuilder:
+    builder = InlineKeyboardBuilder()
+    
+    # Основные кнопки первого ряда
+    builder.button(text=PROFILE_BUTTON, callback_data=PROFILE_CALLBACK)
+    builder.button(text=SUBSCRIPTION_BUTTON, callback_data=SUBSCRIPTION_CALLBACK)
+    
+    # Кнопки специального доступа
+    special_buttons = []
+    if role == "SUPPORT":
+        special_buttons.append((SUPPORT_BUTTON, SUPPORT_CALLBACK))
+    elif role == "ADMIN":
+        special_buttons.extend([
+            (SUPPORT_BUTTON, SUPPORT_CALLBACK),
+            (ADMIN_BUTTON, ADMIN_CALLBACK)
+        ])
+    
+    # Добавляем специальные кнопки
+    for text, callback in special_buttons:
+        builder.button(text=text, callback_data=callback)
+    
+    # Кнопка помощи в последнем ряду
+    builder.button(text=HELP_BUTTON, callback_data=HELP_CALLBACK)
+    
+    # Распределение кнопок: 
+    # 1-й ряд: 2 кнопки, 2-й ряд: специальные кнопки, 3-й ряд: 1 кнопка
+    builder.adjust(2, *[2]*len(special_buttons), 1)
+    
+    return builder.as_markup()
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/common/callbacks.py
+🔹 СОДЕРЖИМОЕ:
+# modules/common/callbacks.py
+from aiogram.filters.callback_data import CallbackData
+
+class ProfileActions(CallbackData, prefix="profile"):
+    action: str  # refresh, manage_vpn, etc.
+
+
+--------------------------------------------------
+
+=== ДИРЕКТОРИЯ: /home/REMBOT/modules/user ===
+
+=== ДИРЕКТОРИЯ: /home/REMBOT/modules/user/profile ===
+
+📄 ФАЙЛ: /home/REMBOT/modules/user/profile/router.py
+🔹 СОДЕРЖИМОЕ:
+from aiogram import Router, F
+from .handlers import show_profile
+from modules.common.texts import PROFILE_CALLBACK
+
+profile_router = Router()
+
+profile_router.callback_query.register(
+    show_profile,
+    F.data.startswith(PROFILE_CALLBACK)
+)
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/user/profile/handlers.py
+🔹 СОДЕРЖИМОЕ:
+from aiogram import F
+from aiogram.types import CallbackQuery
+from aiogram.exceptions import TelegramBadRequest
+from core.database.crud import get_user_full_data
+from .texts import PROFILE_TEXT
+from .keyboards import get_profile_kb
+from core.database.database import async_session
+import logging
+from datetime import datetime
+from core.database.model import User
+
+logger = logging.getLogger(__name__)
+
+async def show_profile(callback: CallbackQuery):
+    """Обработчик показа профиля пользователя с данными только из локальной БД"""
+    try:
+        await callback.answer()
+
+        async with async_session() as session:
+            # Получаем данные пользователя из локальной БД
+            user_data = await get_user_full_data(session, callback.from_user.id)
+            
+            if not user_data or not isinstance(user_data.get("user"), User):
+                return await callback.answer("❌ Ошибка загрузки профиля", show_alert=True)
+            
+            user = user_data["user"]
+            
+            # Формируем текст профиля
+            profile_text = PROFILE_TEXT.format(
+                username=f"@{user.username}" if user.username else "Не установлен",
+                balance=float(user.balance) if user.balance else 0.0,
+                subscriptions_count=user_data.get("subscriptions_count", 0)
+            )
+            
+            try:
+                await callback.message.edit_text(
+                    text=profile_text,
+                    reply_markup=get_profile_kb()
+                )
+            except TelegramBadRequest:
+                # Если сообщение не изменилось, игнорируем
+                pass
+                
+    except Exception as e:
+        logger.error(f"Ошибка в show_profile: {str(e)}", exc_info=True)
+        await callback.answer("⚠️ Произошла ошибка при загрузке профиля", show_alert=True)
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/user/profile/texts.py
+🔹 СОДЕРЖИМОЕ:
+PROFILE_TEXT = """
+👤 *Ваш профиль*
+
+▫️ *Никнейм:* {username}
+▫️ *Баланс:* {balance} ₽
+▫️ *Активных подписок:* {subscriptions_count}
+"""
+
+BACK_BUTTON = "🔙 Назад"
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/user/profile/keyboards.py
+🔹 СОДЕРЖИМОЕ:
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.types import InlineKeyboardButton
+from .texts import BACK_BUTTON
+from modules.common.texts import MAIN_MENU_CALLBACK
+
+def get_profile_kb() -> InlineKeyboardBuilder:
+    builder = InlineKeyboardBuilder()
+    builder.button(text=BACK_BUTTON, callback_data=MAIN_MENU_CALLBACK)
+    return builder.as_markup()
+
+
+--------------------------------------------------
+
+=== ДИРЕКТОРИЯ: /home/REMBOT/modules/user/control_subscription ===
+
+📄 ФАЙЛ: /home/REMBOT/modules/user/control_subscription/router.py
+🔹 СОДЕРЖИМОЕ:
+from aiogram import Router, F  
+from aiogram.types import CallbackQuery, Message  
+from core.filters import IsNotBanned  
+from .handlers import (  
+    manage_subscription_menu,  
+    renew_subscription,  
+    view_devices,  
+    show_device_details,  
+    remove_device_callback,  
+    initiate_transfer_subscription,  
+    process_transfer_contact,  
+    cancel_transfer,  
+    TransferSubscriptionStates  
+)  
+
+router = Router()  
+
+# Обработчики управления подпиской  
+router.callback_query.register(  
+    manage_subscription_menu,  
+    F.data.startswith("manage_subscription:"),  
+    IsNotBanned  
+)  
+
+router.callback_query.register(  
+    renew_subscription,  
+    F.data.startswith("renew_subscription:"),  
+    IsNotBanned  
+)  
+
+# Обработчики управления устройствами  
+router.callback_query.register(  
+    view_devices,  
+    F.data.startswith("view_devices:"),  
+    IsNotBanned  
+)  
+
+router.callback_query.register(  
+    show_device_details,  
+    F.data.startswith("device_details:"),  
+    IsNotBanned  
+)  
+
+router.callback_query.register(  
+    remove_device_callback,  
+    F.data.startswith("remove_device:"),  
+    IsNotBanned  
+)  
+
+# Обработчики передачи подписки  
+router.callback_query.register(  
+    initiate_transfer_subscription,  
+    F.data.startswith("transfer_subscription:"),  
+    IsNotBanned  
+)  
+
+router.callback_query.register(  
+    cancel_transfer,  
+    F.data.startswith("cancel_transfer:"),  
+    IsNotBanned  
+)  
+
+# Обработчик контакта для передачи  
+router.message.register(  
+    process_transfer_contact,  
+    TransferSubscriptionStates.waiting_for_contact,  
+    IsNotBanned  
+)
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/user/control_subscription/handlers.py
+🔹 СОДЕРЖИМОЕ:
+from datetime import datetime, timedelta
+from aiogram.types import CallbackQuery, Message, Contact
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
+from core.database import crud
+from core.api.remnawave_client import remnawave_service
+from core.database.database import async_session
+from .keyboards import (
+    get_manage_subscription_kb,
+    get_device_list_kb,
+    get_device_details_kb,
+    get_cancel_transfer_kb,
+    get_back_to_devices_kb,
+    get_back_to_manage_kb,
+    DEVICES_PER_PAGE
+)
+from .texts import (
+    MANAGE_SUBSCRIPTION_TEXT,
+    NO_SUBSCRIPTION_TEXT,
+    INSUFFICIENT_BALANCE_TEXT,
+    RENEWAL_PRICE_NOT_SET_TEXT,
+    RENEW_SUBSCRIPTION_SUCCESS_TEXT,
+    NO_DEVICES_TEXT,
+    DEVICES_PAGINATION_TEXT,
+    DEVICE_DETAILS_TEXT,
+    LAST_DEVICE_TEXT,
+    DEVICE_REMOVED_TEXT,
+    TRANSFER_COOLDOWN_TEXT,
+    TRANSFER_REQUEST_TEXT,
+    INVALID_CONTACT_TEXT,
+    SELF_TRANSFER_TEXT,
+    TRANSFER_SUCCESS_TEXT,
+    TRANSFER_RECIPIENT_NOTIFICATION_TEXT,
+    TRANSFER_CANCELLED_TEXT,
+    DEVICE_REMOVAL_LIMIT_TEXT,
+    TRANSFER_LIMIT_WARNING,
+    TRANSFER_COOLDOWN_DAYS,
+    DEVICE_REMOVAL_LIMIT
+)
+import logging
+
+logger = logging.getLogger(__name__)
+
+class TransferSubscriptionStates(StatesGroup):
+    waiting_for_contact = State()
+
+async def manage_subscription_menu(callback: CallbackQuery) -> None:
+    """Меню управления подпиской"""
+    try:
+        await callback.answer()
+        subscription_uuid = callback.data.split(":")[1]
+        
+        async with async_session() as session:
+            local_sub = await crud.get_purchased_subscription_by_uuid(session, subscription_uuid)
+            if not local_sub:
+                await callback.message.answer(NO_SUBSCRIPTION_TEXT)
+                return
+            
+            if local_sub.telegram_id != callback.from_user.id:
+                await callback.message.answer("⚠️ Вы не владелец этой подписки")
+                return
+            
+            sub_info = await remnawave_service.get_subscription_by_uuid(subscription_uuid)
+            if "error" in sub_info:
+                await callback.message.answer(f"Ошибка: {sub_info['error']}")
+                return
+            
+            await callback.message.edit_text(
+                MANAGE_SUBSCRIPTION_TEXT.format(
+                    username=sub_info['username'],
+                    used_traffic=sub_info['used_traffic_bytes'] / (1024 ** 3),
+                    status=sub_info['status'].capitalize(),
+                    renewal_price=float(local_sub.renewal_price) if local_sub.renewal_price else 0.0
+                ),
+                reply_markup=get_manage_subscription_kb(subscription_uuid),
+                parse_mode="HTML"
+            )
+    except Exception as e:
+        logger.error(f"Ошибка в manage_subscription_menu: {str(e)}", exc_info=True)
+        await callback.message.answer("⚠️ Ошибка при загрузке меню")
+
+async def renew_subscription(callback: CallbackQuery) -> None:
+    """Продление подписки"""
+    try:
+        await callback.answer()
+        subscription_uuid = callback.data.split(":")[1]
+        
+        async with async_session() as session:
+            local_sub = await crud.get_purchased_subscription_by_uuid(session, subscription_uuid)
+            if not local_sub:
+                await callback.message.answer(NO_SUBSCRIPTION_TEXT)
+                return
+                
+            if local_sub.telegram_id != callback.from_user.id:
+                await callback.message.answer("⚠️ Вы не владелец этой подписки")
+                return
+                
+            user = await crud.get_user_by_telegram_id(session, callback.from_user.id)
+            if not user:
+                await callback.message.answer("⚠️ Пользователь не найден")
+                return
+                
+            if local_sub.renewal_price is None:
+                await callback.message.answer(RENEWAL_PRICE_NOT_SET_TEXT)
+                return
+                
+            if user.balance < local_sub.renewal_price:
+                await callback.message.answer(
+                    INSUFFICIENT_BALANCE_TEXT.format(
+                        required=local_sub.renewal_price,
+                        balance=user.balance
+                    ),
+                    parse_mode="HTML"
+                )
+                return
+                
+            user.balance -= local_sub.renewal_price
+            new_expiration = datetime.now() + timedelta(days=30)
+            local_sub.expired_at = new_expiration
+            await session.commit()
+            
+            await callback.message.answer(
+                RENEW_SUBSCRIPTION_SUCCESS_TEXT.format(
+                    expiration=new_expiration.strftime("%Y-%m-%d %H:%M:%S"),
+                    amount=local_sub.renewal_price
+                )
+            )
+    except Exception as e:
+        logger.error(f"Ошибка в renew_subscription: {str(e)}", exc_info=True)
+        await callback.message.answer("⚠️ Ошибка при продлении подписки")
+
+async def view_devices(callback: CallbackQuery) -> None:
+    """Просмотр подключенных устройств"""
+    try:
+        await callback.answer()
+        data = callback.data.split(":")
+        subscription_uuid = data[1]
+        page = int(data[2]) if len(data) > 2 else 0
+        
+        async with async_session() as session:
+            local_sub = await crud.get_purchased_subscription_by_uuid(session, subscription_uuid)
+            if not local_sub:
+                await callback.message.answer(NO_SUBSCRIPTION_TEXT)
+                return
+                
+            if local_sub.telegram_id != callback.from_user.id:
+                await callback.message.answer("⚠️ Вы не владелец этой подписки")
+                return
+                
+            devices = await remnawave_service.get_connected_devices(subscription_uuid)
+            if not devices:
+                await callback.message.answer(NO_DEVICES_TEXT)
+                return
+                
+            sub_info = await remnawave_service.get_subscription_by_uuid(subscription_uuid)
+            if "error" in sub_info:
+                await callback.message.answer(f"Ошибка: {sub_info['error']}")
+                return
+                
+            total_pages = (len(devices) + DEVICES_PER_PAGE - 1) // DEVICES_PER_PAGE
+            paginated_devices = devices[page*DEVICES_PER_PAGE:(page+1)*DEVICES_PER_PAGE]
+            
+            await callback.message.edit_text(
+                DEVICES_PAGINATION_TEXT.format(
+                    username=sub_info['username'],
+                    current_page=page+1,
+                    total_pages=total_pages,
+                    total_devices=len(devices)
+                ),
+                reply_markup=get_device_list_kb(
+                    subscription_uuid,
+                    paginated_devices,
+                    page,
+                    total_pages
+                ),
+                parse_mode="HTML"
+            )
+    except Exception as e:
+        logger.error(f"Ошибка в view_devices: {str(e)}", exc_info=True)
+        await callback.message.answer("⚠️ Ошибка при загрузке устройств")
+
+async def show_device_details(callback: CallbackQuery) -> None:
+    """Детали устройства"""
+    try:
+        await callback.answer()
+        data = callback.data.split(":")
+        subscription_uuid, short_hwid = data[1], data[2]
+        
+        async with async_session() as session:
+            local_sub = await crud.get_purchased_subscription_by_uuid(session, subscription_uuid)
+            if not local_sub:
+                await callback.message.answer(NO_SUBSCRIPTION_TEXT)
+                return
+                
+            if local_sub.telegram_id != callback.from_user.id:
+                await callback.message.answer("⚠️ Вы не владелец этой подписки")
+                return
+                
+            devices = await remnawave_service.get_connected_devices(subscription_uuid)
+            device = next((d for d in devices if d['hwid'].startswith(short_hwid)), None)
+            
+            if not device:
+                await callback.message.answer(NO_DEVICES_TEXT)
+                return
+                
+            device_name = f"{device['platform']} {device['device_model']}".strip() or "Unknown"
+            await callback.message.answer(
+                DEVICE_DETAILS_TEXT.format(
+                    hwid=device['hwid'],
+                    name=device_name,
+                    updated_at=device['updated_at']
+                ),
+                reply_markup=get_device_details_kb(subscription_uuid, device['hwid']),
+                parse_mode="HTML"
+            )
+    except Exception as e:
+        logger.error(f"Ошибка в show_device_details: {str(e)}", exc_info=True)
+        await callback.message.answer("⚠️ Ошибка при загрузке устройства")
+
+async def remove_device_callback(callback: CallbackQuery) -> None:
+    """Удаление устройства с обновлением сообщения"""
+    try:
+        await callback.answer()
+        data = callback.data.split(":")
+        subscription_uuid, short_hwid = data[1], data[2]
+        
+        async with async_session() as session:
+            local_sub = await crud.get_purchased_subscription_by_uuid(session, subscription_uuid)
+            if not local_sub:
+                await callback.message.edit_text(NO_SUBSCRIPTION_TEXT)
+                return
+                
+            if local_sub.telegram_id != callback.from_user.id:
+                await callback.message.edit_text("⚠️ Вы не владелец этой подписки")
+                return
+                
+            current_time = datetime.now()
+            
+            if (local_sub.last_removal_reset and 
+                (current_time - local_sub.last_removal_reset).days >= 30):
+                local_sub.device_removal_count = 0
+                local_sub.last_removal_reset = current_time
+                
+            if local_sub.device_removal_count >= DEVICE_REMOVAL_LIMIT:
+                days_left = 30 - (current_time - local_sub.last_removal_reset).days
+                await callback.message.edit_text(
+                    DEVICE_REMOVAL_LIMIT_TEXT.format(days_left=days_left),
+                    reply_markup=get_back_to_devices_kb(subscription_uuid)
+                )
+                return
+
+            devices = await remnawave_service.get_connected_devices(subscription_uuid)
+            if not devices:
+                await callback.message.edit_text(
+                    NO_DEVICES_TEXT,
+                    reply_markup=get_back_to_manage_kb(subscription_uuid)
+                )
+                return
+                
+            if len(devices) <= 1:
+                await callback.message.edit_text(
+                    LAST_DEVICE_TEXT,
+                    reply_markup=get_back_to_devices_kb(subscription_uuid)
+                )
+                return
+                
+            device = next((d for d in devices if d['hwid'].startswith(short_hwid)), None)
+            if not device:
+                await callback.message.edit_text(
+                    "⚠️ Устройство не найдено",
+                    reply_markup=get_back_to_devices_kb(subscription_uuid)
+                )
+                return
+                
+            if not await remnawave_service.remove_device(subscription_uuid, device['hwid']):
+                await callback.message.edit_text(
+                    "⚠️ Ошибка при удалении устройства",
+                    reply_markup=get_back_to_devices_kb(subscription_uuid)
+                )
+                return
+                
+            local_sub.device_removal_count += 1
+            if local_sub.last_removal_reset is None:
+                local_sub.last_removal_reset = current_time
+            await session.commit()
+            
+            updated_devices = await remnawave_service.get_connected_devices(subscription_uuid)
+            sub_info = await remnawave_service.get_subscription_by_uuid(subscription_uuid)
+            
+            message_text = (
+                f"✅ Устройство {device['hwid'][:8]} успешно удалено\n\n"
+                f"📱 Осталось устройств: {len(updated_devices)}"
+            )
+            
+            await callback.message.edit_text(
+                text=message_text,
+                reply_markup=get_device_list_kb(
+                    subscription_uuid=subscription_uuid,
+                    devices=updated_devices[:DEVICES_PER_PAGE],
+                    page=0,
+                    total_pages=max(1, len(updated_devices) // DEVICES_PER_PAGE)
+                )
+            )
+            
+    except Exception as e:
+        logger.error(f"Ошибка при удалении устройства: {str(e)}", exc_info=True)
+        await callback.message.edit_text(
+            "⚠️ Произошла ошибка при удалении устройства",
+            reply_markup=get_back_to_manage_kb(subscription_uuid)
+        )
+
+async def initiate_transfer_subscription(callback: CallbackQuery, state: FSMContext) -> None:
+    """Начало передачи подписки"""
+    try:
+        await callback.answer()
+        subscription_uuid = callback.data.split(":")[1]
+        
+        async with async_session() as session:
+            local_sub = await crud.get_purchased_subscription_by_uuid(session, subscription_uuid)
+            if not local_sub:
+                await callback.message.answer(NO_SUBSCRIPTION_TEXT)
+                return
+            
+            if local_sub.telegram_id != callback.from_user.id:
+                await callback.message.answer("⚠️ Вы не владелец этой подписки")
+                return
+            
+            if local_sub.last_transfer_time:
+                days_passed = (datetime.now() - local_sub.last_transfer_time).days
+                if days_passed < TRANSFER_COOLDOWN_DAYS:
+                    remaining_days = TRANSFER_COOLDOWN_DAYS - days_passed
+                    await callback.message.answer(
+                        TRANSFER_LIMIT_WARNING.format(
+                            days_passed=days_passed,
+                            remaining_days=remaining_days
+                        ),
+                        parse_mode="HTML"
+                    )
+                    return
+            
+            await state.update_data(subscription_uuid=subscription_uuid)
+            await state.set_state(TransferSubscriptionStates.waiting_for_contact)
+            await callback.message.answer(
+                TRANSFER_REQUEST_TEXT,
+                reply_markup=get_cancel_transfer_kb(subscription_uuid)
+            )
+    except Exception as e:
+        logger.error(f"Ошибка в initiate_transfer_subscription: {str(e)}", exc_info=True)
+        await callback.message.answer("⚠️ Ошибка при передаче подписки")
+        await state.clear()
+
+async def process_transfer_contact(message: Message, state: FSMContext) -> None:
+    """Обработка передачи подписки новому владельцу"""
+    try:
+        if not isinstance(message.contact, Contact):
+            await message.answer(INVALID_CONTACT_TEXT)
+            return
+            
+        contact_id = message.contact.user_id
+        if not contact_id:
+            await message.answer(INVALID_CONTACT_TEXT)
+            return
+            
+        if contact_id == message.from_user.id:
+            await message.answer(SELF_TRANSFER_TEXT)
+            return
+            
+        data = await state.get_data()
+        subscription_uuid = data.get("subscription_uuid")
+        if not subscription_uuid:
+            await message.answer("⚠️ Подписка не найдена")
+            await state.clear()
+            return
+            
+        async with async_session() as session:
+            # Обновляем владельца в локальной БД
+            success = await crud.update_subscription_transfer(
+                session=session,
+                sub_uuid=subscription_uuid,
+                new_telegram_id=contact_id
+            )
+            
+            if not success:
+                await message.answer(NO_SUBSCRIPTION_TEXT)
+                await state.clear()
+                return
+            
+            # Получаем информацию о подписке для уведомлений
+            sub_info = await remnawave_service.get_subscription_by_uuid(subscription_uuid)
+            if "error" in sub_info:
+                await message.answer(f"Ошибка API: {sub_info['error']}")
+                await state.clear()
+                return
+                
+            sub_name = sub_info.get('username', subscription_uuid[:8])
+            
+            await message.answer(
+                TRANSFER_SUCCESS_TEXT.format(
+                    subscription_name=sub_name,
+                    contact_id=contact_id,
+                    next_transfer_date=(datetime.now() + timedelta(days=TRANSFER_COOLDOWN_DAYS)).strftime('%d.%m.%Y')
+                )
+            )
+            
+            # Уведомляем нового владельца
+            await message.bot.send_message(
+                contact_id,
+                TRANSFER_RECIPIENT_NOTIFICATION_TEXT.format(username=sub_name),
+                parse_mode="HTML"
+            )
+            
+        await state.clear()
+    except Exception as e:
+        logger.error(f"Ошибка в process_transfer_contact: {str(e)}", exc_info=True)
+        await message.answer("⚠️ Ошибка при передаче подписки")
+        await state.clear()
+
+async def cancel_transfer(callback: CallbackQuery, state: FSMContext) -> None:
+    """Отмена передачи подписки"""
+    try:
+        await callback.answer()
+        await callback.message.answer(TRANSFER_CANCELLED_TEXT)
+        await state.clear()
+    except Exception as e:
+        logger.error(f"Ошибка в cancel_transfer: {str(e)}")
+        await callback.message.answer("⚠️ Ошибка при отмене передачи")
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/user/control_subscription/texts.py
+🔹 СОДЕРЖИМОЕ:
+# Тексты для управления подпиской
+MANAGE_SUBSCRIPTION_TEXT = (
+    "⚙️ Управление подпиской <b>{username}</b>\n\n"
+    "📊 Использовано трафика: {used_traffic:.2f} GB\n"
+    "🔔 Статус: {status}\n"
+    "💰 Цена продления: {renewal_price:.2f} ₽\n\n"
+    "Выберите действие:"
+)
+
+NO_SUBSCRIPTION_TEXT = "⚠️ Подписка не найдена"
+INSUFFICIENT_BALANCE_TEXT = "⚠️ Недостаточно средств. Требуется: {required:.2f} ₽, баланс: {balance:.2f} ₽"
+RENEWAL_PRICE_NOT_SET_TEXT = "⚠️ Цена продления не указана"
+RENEW_SUBSCRIPTION_SUCCESS_TEXT = "✅ Подписка продлена до {expiration}. Списано {amount:.2f} ₽"
+
+# Тексты для управления устройствами
+NO_DEVICES_TEXT = "⚠️ Устройства не найдены"
+DEVICES_LIST_TEXT = "📱 Подключённые устройства для подписки <b>{username}</b>:"
+DEVICES_PAGINATION_TEXT = (
+    "📱 Подключённые устройства для подписки <b>{username}</b>:\n\n"
+    "Страница {current_page}/{total_pages} | Всего устройств: {total_devices}"
+)
+DEVICE_DETAILS_TEXT = (
+    "📱 Информация об устройстве:\n\n"
+    "HWID: {hwid}\n"
+    "Имя: {name}\n"
+    "Обновлено: {updated_at}\n\n"
+    "Выберите действие:"
+)
+LAST_DEVICE_TEXT = "⚠️ Нельзя удалить последнее устройство"
+DEVICE_REMOVED_TEXT = "✅ Устройство {hwid} удалено"
+DEVICE_REMOVAL_LIMIT_TEXT = "⚠️ Достигнут лимит удаления устройств (4 в месяц). Попробуйте снова через {days_left} дней"
+
+# Тексты для передачи подписки
+TRANSFER_COOLDOWN_TEXT = "⚠️ Подписку можно передать через {days_left} дней"
+TRANSFER_REQUEST_TEXT = "📱 Отправьте контакт пользователя для передачи подписки:"
+INVALID_CONTACT_TEXT = "⚠️ Пожалуйста, отправьте действительный контакт"
+SELF_TRANSFER_TEXT = "⚠️ Нельзя передать подписку самому себе"
+TRANSFER_SUCCESS_TEXT = (
+    "✅ Подписка '{subscription_name}' передана пользователю с ID {contact_id}!\n\n"
+    "Следующая передача возможна после {next_transfer_date}"
+)
+TRANSFER_RECIPIENT_NOTIFICATION_TEXT = (
+    "🎉 Вам передана подписка <b>{username}</b>!\n\n"
+    "Вы можете управлять ей в разделе 'Мои подписки'.\n"
+    "Передать эту подписку можно будет через 14 дней."
+)
+TRANSFER_CANCELLED_TEXT = "❌ Передача подписки отменена"
+TRANSFER_LIMIT_WARNING = (
+    "⏳ Эту подписку уже передавали {days_passed} дней назад.\n\n"
+    "Согласно правилам, передавать подписку можно "
+    "только 1 раз в 14 дней.\n\n"
+    "Повторить попытку можно будет через {remaining_days} дней."
+)
+
+# Константы
+TRANSFER_COOLDOWN_DAYS = 14  # Ограничение 14 дней между передачами
+DEVICE_REMOVAL_LIMIT = 4     # Максимум 4 удаления устройств в месяц
+PAGINATION_PREV_BUTTON = "⬅️ Назад"
+PAGINATION_NEXT_BUTTON = "Вперёд ➡️"
+BACK_BUTTON = "🔙 Назад"
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/user/control_subscription/keyboards.py
+🔹 СОДЕРЖИМОЕ:
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from typing import List, Dict, Optional
+
+# Константы для кнопок
+BACK_BUTTON = "⬅️ Назад"
+MANAGE_BUTTON = "⚙️ Управление"
+DEVICES_BUTTON = "📱 Устройства"
+RENEW_BUTTON = "🔄 Продлить"
+TRANSFER_BUTTON = "👤 Передать"
+REMOVE_BUTTON = "🗑 Удалить"
+CANCEL_BUTTON = "❌ Отмена"
+PREV_PAGE_BUTTON = "◀️"
+NEXT_PAGE_BUTTON = "▶️"
+HELP_BUTTON = "❓ Помощь"
+
+# Количество устройств на странице
+DEVICES_PER_PAGE = 5
+
+def get_main_menu_kb(role: str = "USER") -> InlineKeyboardMarkup:
+    """Главное меню с учетом роли пользователя"""
+    builder = InlineKeyboardBuilder()
+    
+    builder.button(text="👤 Профиль", callback_data="menu:profile")
+    builder.button(text="💎 Подписки", callback_data="menu:subscriptions")
+    
+    if role in ["ADMIN", "SUPPORT"]:
+        builder.button(text="🛎 Поддержка", callback_data="menu:support")
+    if role == "ADMIN":
+        builder.button(text="👑 Админ-панель", callback_data="menu:admin")
+    
+    builder.button(text=HELP_BUTTON, callback_data="menu:help")
+    
+    # Распределение кнопок (2 в первом ряду, остальные по 1)
+    builder.adjust(2, 1)
+    return builder.as_markup()
+
+def get_subscriptions_list_kb(subscriptions: List[Dict]) -> InlineKeyboardMarkup:
+    """Список подписок пользователя"""
+    builder = InlineKeyboardBuilder()
+    
+    for sub in subscriptions:
+        builder.button(
+            text=sub['username'],
+            callback_data=f"subscription_detail:{sub['uuid']}"
+        )
+    
+    builder.button(text="🛒 Купить подписку", callback_data="buy_subscription")
+    builder.button(text=BACK_BUTTON, callback_data="menu:main")
+    
+    builder.adjust(1, 2)
+    return builder.as_markup()
+
+def get_subscription_detail_kb(subscription_uuid: str, subscription_url: str) -> InlineKeyboardMarkup:
+    """Детали подписки"""
+    builder = InlineKeyboardBuilder()
+    
+    builder.button(text="🔗 Ссылка подключения", url=subscription_url)
+    builder.button(text=MANAGE_BUTTON, callback_data=f"manage_subscription:{subscription_uuid}")
+    builder.button(text=BACK_BUTTON, callback_data="menu:subscriptions")
+    
+    builder.adjust(1, 1, 1)
+    return builder.as_markup()
+
+def get_manage_subscription_kb(subscription_uuid: str) -> InlineKeyboardMarkup:
+    """Меню управления подпиской"""
+    builder = InlineKeyboardBuilder()
+    
+    builder.button(text=RENEW_BUTTON, callback_data=f"renew_subscription:{subscription_uuid}")
+    builder.button(text=DEVICES_BUTTON, callback_data=f"view_devices:{subscription_uuid}:0")
+    builder.button(text=TRANSFER_BUTTON, callback_data=f"transfer_subscription:{subscription_uuid}")
+    builder.button(text=BACK_BUTTON, callback_data=f"subscription_detail:{subscription_uuid}")
+    
+    builder.adjust(1, 2, 1)
+    return builder.as_markup()
+
+def get_device_list_kb(
+    subscription_uuid: str,
+    devices: List[Dict],
+    page: int,
+    total_pages: int
+) -> InlineKeyboardMarkup:
+    """Список устройств с пагинацией"""
+    builder = InlineKeyboardBuilder()
+    
+    # Кнопки устройств
+    for device in devices:
+        device_name = f"{device['platform']} {device['device_model']}".strip() or device['hwid'][:8]
+        builder.button(
+            text=device_name,
+            callback_data=f"device_details:{subscription_uuid}:{device['hwid'][:8]}"
+        )
+    
+    # Пагинация
+    pagination_row = []
+    if page > 0:
+        pagination_row.append(
+            InlineKeyboardButton(
+                text=PREV_PAGE_BUTTON,
+                callback_data=f"view_devices:{subscription_uuid}:{page-1}"
+            )
+        )
+    if page < total_pages - 1:
+        pagination_row.append(
+            InlineKeyboardButton(
+                text=NEXT_PAGE_BUTTON,
+                callback_data=f"view_devices:{subscription_uuid}:{page+1}"
+            )
+        )
+    
+    # Навигация
+    builder.row(*pagination_row)
+    builder.button(text=BACK_BUTTON, callback_data=f"manage_subscription:{subscription_uuid}")
+    
+    builder.adjust(1, *[1]*len(devices), len(pagination_row), 1)
+    return builder.as_markup()
+
+def get_device_details_kb(subscription_uuid: str, hwid: str) -> InlineKeyboardMarkup:
+    """Детали устройства"""
+    builder = InlineKeyboardBuilder()
+    
+    builder.button(
+        text=REMOVE_BUTTON,
+        callback_data=f"remove_device:{subscription_uuid}:{hwid[:8]}"
+    )
+    builder.button(
+        text=BACK_BUTTON,
+        callback_data=f"view_devices:{subscription_uuid}:0"
+    )
+    
+    builder.adjust(1, 1)
+    return builder.as_markup()
+
+def get_cancel_transfer_kb(subscription_uuid: str) -> InlineKeyboardMarkup:
+    """Клавиатура отмены передачи"""
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text=CANCEL_BUTTON,
+        callback_data=f"cancel_transfer:{subscription_uuid}"
+    )
+    return builder.as_markup()
+
+def get_back_to_devices_kb(subscription_uuid: str) -> InlineKeyboardMarkup:
+    """Кнопка возврата к списку устройств"""
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text="⬅️ К устройствам",
+        callback_data=f"view_devices:{subscription_uuid}:0"
+    )
+    return builder.as_markup()
+
+def get_back_to_manage_kb(subscription_uuid: str) -> InlineKeyboardMarkup:
+    """Кнопка возврата к управлению подпиской"""
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text="⬅️ К управлению",
+        callback_data=f"manage_subscription:{subscription_uuid}"
+    )
+    return builder.as_markup()
+
+def get_no_subscriptions_kb() -> InlineKeyboardMarkup:
+    """Клавиатура при отсутствии подписок"""
+    builder = InlineKeyboardBuilder()
+    builder.button(text="🛒 Купить подписку", callback_data="buy_subscription")
+    builder.button(text=BACK_BUTTON, callback_data="menu:main")
+    builder.adjust(1, 1)
+    return builder.as_markup()
+
+--------------------------------------------------
+
+=== ДИРЕКТОРИЯ: /home/REMBOT/modules/user/subscription ===
+
+📄 ФАЙЛ: /home/REMBOT/modules/user/subscription/router.py
+🔹 СОДЕРЖИМОЕ:
+from aiogram import Router, F
+from .handlers import show_subscriptions, show_subscription_detail
+from .texts import SUBSCRIPTIONS_CALLBACK, SUBSCRIPTION_DETAIL_CALLBACK
+
+# Создаем роутер модуля подписок
+subscriptions_router = Router()
+
+# Регистрируем обработчики
+subscriptions_router.callback_query.register(
+    show_subscriptions,
+    F.data == SUBSCRIPTIONS_CALLBACK
+)
+
+subscriptions_router.callback_query.register(
+    show_subscription_detail,
+    F.data.startswith(SUBSCRIPTION_DETAIL_CALLBACK)
+)
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/user/subscription/handlers.py
+🔹 СОДЕРЖИМОЕ:
+from aiogram.types import CallbackQuery
+from core.database.crud import get_purchased_subscriptions
+from core.api.remnawave_client import remnawave_service
+from . import texts, keyboards
+from core.database.database import async_session
+import logging
+from core.database import crud
+
+logger = logging.getLogger(__name__)
+
+async def show_subscriptions(callback: CallbackQuery) -> None:
+    """Обработчик раздела 'Мои подписки' (только локальные данные)"""
+    try:
+        await callback.answer()
+        user_id = callback.from_user.id
+        
+        async with async_session() as session:
+            # Получаем подписки только из локальной БД
+            local_subscriptions = await get_purchased_subscriptions(session, user_id)
+            
+            if not local_subscriptions:
+                await callback.message.edit_text(
+                    texts.NO_SUBSCRIPTIONS_TEXT,
+                    reply_markup=keyboards.get_no_subscriptions_kb()
+                )
+                return
+            
+            # Формируем список подписок для клавиатуры
+            subscriptions_info = []
+            for sub in local_subscriptions:
+                subscriptions_info.append({
+                    "uuid": sub.sub_uuid,
+                    "username": sub.username
+                })
+            
+            await callback.message.edit_text(
+                texts.SUBSCRIPTIONS_LIST_TEXT,
+                reply_markup=keyboards.get_subscriptions_list_kb(subscriptions_info)
+            )
+            
+    except Exception as e:
+        logger.error(f"Ошибка в show_subscriptions: {str(e)}", exc_info=True)
+        await callback.answer("⚠️ Ошибка при загрузке подписок", show_alert=True)
+
+async def show_subscription_detail(callback: CallbackQuery) -> None:
+    """Детали подписки с запросом в API по UUID"""
+    try:
+        await callback.answer()
+        subscription_uuid = callback.data.split(":")[1]
+        
+        async with async_session() as session:
+            # Проверяем существование подписки в локальной БД
+            local_sub = await crud.get_purchased_subscription_by_uuid(session, subscription_uuid)
+            if not local_sub:
+                await callback.answer("⚠️ Подписка не найдена", show_alert=True)
+                return
+            
+            # Запрос данных подписки в API
+            sub_info = await remnawave_service.get_subscription_by_uuid(subscription_uuid)
+            
+            if "error" in sub_info:
+                await callback.message.answer(
+                    texts.SUBSCRIPTION_ERROR_TEXT.format(error=sub_info['error'])
+                )
+                return
+            
+            # Форматирование данных для отображения
+            status_emoji = {
+                "active": "🟢",
+                "disabled": "🔴",
+                "expired": "🟠",
+                "limited": "🟡"
+            }.get(sub_info["status"].lower(), "⚪️")
+            
+            message_text = texts.SUBSCRIPTION_DETAIL_TEMPLATE.format(
+                status_emoji=status_emoji,
+                username=local_sub.username,
+                status=sub_info['status'].capitalize(),
+                used_traffic=sub_info['used_traffic_bytes'] / (1024 ** 3),
+                data_limit=sub_info['data_limit'],
+                expire=sub_info['expire'],
+                last_connected=sub_info['last_connected_node'],
+                purchase_price=float(local_sub.purchase_price) if local_sub.purchase_price else 0.0,
+                renewal_price=float(local_sub.renewal_price) if local_sub.renewal_price else 0.0
+            )
+            
+            await callback.message.edit_text(
+                text=message_text,
+                reply_markup=keyboards.get_subscription_detail_kb(
+                    subscription_uuid=subscription_uuid,
+                    subscription_url=sub_info['subscription_url']
+                ),
+                parse_mode="HTML"
+            )
+            
+    except Exception as e:
+        logger.error(f"Ошибка в show_subscription_detail: {str(e)}", exc_info=True)
+        await callback.answer("⚠️ Ошибка при загрузке подписки", show_alert=True)
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/user/subscription/texts.py
+🔹 СОДЕРЖИМОЕ:
+# Основные тексты
+NO_SUBSCRIPTIONS_TEXT = (
+    "📭 У вас пока нет активных подписок.\n\n"
+    "Приобретите подписку, чтобы получить доступ к нашим услугам! 🛒"
+)
+
+SUBSCRIPTIONS_LIST_TEXT = "📋 Ваши активные подписки:"
+
+SUBSCRIPTION_DETAIL_TEMPLATE = (
+    "{status_emoji} <b>{username}</b> ✨\n"
+    "📈 Статус: {status}\n"
+    "🌐 Трафик: {used_traffic:.2f} GB / {data_limit:.2f} GB\n"
+    "⏳ Срок действия: {expire}\n"
+    "📍 Последнее подключение: {last_connected}\n"
+    "💰 Цена покупки: {purchase_price:.2f} ₽\n"
+    "🔄 Цена продления: {renewal_price:.2f} ₽\n"
+)
+
+SUBSCRIPTION_ERROR_TEXT = "⚠️ Ошибка при получении данных подписки:\n{error}"
+
+# Тексты кнопок
+BUY_SUBSCRIPTION_TEXT = "🛒 Купить"
+BUY_ANOTHER_TEXT = "🛒 Купить"
+BACK_TO_LIST_TEXT = "⬅️ Назад к списку"
+REFRESH_TEXT = "🔄 Обновить"
+MANAGE_SUBSCRIPTION_TEXT = "⚙️ Управление подпиской"
+SUBSCRIPTION_LINK_TEXT = "🔗 Ссылка для подключения"
+MAIN_MENU_TEXT = "🏠 Меню"
+
+# Callback data
+SUBSCRIPTIONS_CALLBACK = "subscriptions"
+SUBSCRIPTION_DETAIL_CALLBACK = "subscription_detail:"
+BUY_SUBSCRIPTION_CALLBACK = "buy_subscription"
+MANAGE_SUBSCRIPTION_CALLBACK = "manage_subscription:"
+MAIN_MENU_CALLBACK = "menu:main"
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/user/subscription/keyboards.py
+🔹 СОДЕРЖИМОЕ:
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.types import InlineKeyboardButton
+from .texts import (
+    BUY_SUBSCRIPTION_TEXT, BUY_ANOTHER_TEXT, 
+    BACK_TO_LIST_TEXT, REFRESH_TEXT,
+    SUBSCRIPTION_DETAIL_CALLBACK, BUY_SUBSCRIPTION_CALLBACK,
+    SUBSCRIPTIONS_CALLBACK, SUBSCRIPTION_LINK_TEXT,
+    MANAGE_SUBSCRIPTION_TEXT, MANAGE_SUBSCRIPTION_CALLBACK,
+    MAIN_MENU_TEXT, MAIN_MENU_CALLBACK
+)
+
+def get_subscriptions_list_kb(subscriptions: list) -> InlineKeyboardBuilder:
+    """Клавиатура списка подписок (только локальные данные)"""
+    builder = InlineKeyboardBuilder()
+    
+    # Кнопки для каждой подписки
+    for sub in subscriptions:
+        builder.button(
+            text=sub["username"],
+            callback_data=f"{SUBSCRIPTION_DETAIL_CALLBACK}{sub['uuid']}"
+        )
+    
+    builder.adjust(1)
+    builder.row(
+        InlineKeyboardButton(
+            text=BUY_ANOTHER_TEXT,
+            callback_data=BUY_SUBSCRIPTION_CALLBACK
+        ),
+        InlineKeyboardButton(
+            text=MAIN_MENU_TEXT,
+            callback_data=MAIN_MENU_CALLBACK
+        )
+    )
+    
+    return builder.as_markup()
+
+# Остальные функции без изменений
+def get_no_subscriptions_kb() -> InlineKeyboardBuilder:
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        InlineKeyboardButton(
+            text=BUY_SUBSCRIPTION_TEXT,
+            callback_data=BUY_SUBSCRIPTION_CALLBACK
+        ),
+        InlineKeyboardButton(
+            text=MAIN_MENU_TEXT,
+            callback_data=MAIN_MENU_CALLBACK
+        )
+    )
+    return builder.as_markup()
+
+def get_subscription_detail_kb(subscription_uuid: str, subscription_url: str) -> InlineKeyboardBuilder:
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        InlineKeyboardButton(
+            text=SUBSCRIPTION_LINK_TEXT,
+            url=subscription_url
+        )
+    )
+    builder.row(
+        InlineKeyboardButton(
+            text=MANAGE_SUBSCRIPTION_TEXT,
+            callback_data=f"{MANAGE_SUBSCRIPTION_CALLBACK}{subscription_uuid}"
+        )
+    )
+    builder.row(
+        InlineKeyboardButton(
+            text=BACK_TO_LIST_TEXT,
+            callback_data=SUBSCRIPTIONS_CALLBACK
+        )
+    )
+    return builder.as_markup()
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/user/subscription/__init__.py
+🔹 СОДЕРЖИМОЕ:
+from .router import subscriptions_router
+
+
+--------------------------------------------------
+
+=== ДИРЕКТОРИЯ: /home/REMBOT/modules/support ===
+
+=== ДИРЕКТОРИЯ: /home/REMBOT/modules/support/tickets ===
+
+📄 ФАЙЛ: /home/REMBOT/modules/support/tickets/router.py
+🔹 СОДЕРЖИМОЕ:
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/support/tickets/handlers.py
+🔹 СОДЕРЖИМОЕ:
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/support/tickets/texts.py
+🔹 СОДЕРЖИМОЕ:
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/support/tickets/keyboards.py
+🔹 СОДЕРЖИМОЕ:
+
+
+--------------------------------------------------
+
+=== ДИРЕКТОРИЯ: /home/REMBOT/modules/support/main_menu ===
+
+📄 ФАЙЛ: /home/REMBOT/modules/support/main_menu/router.py
+🔹 СОДЕРЖИМОЕ:
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/support/main_menu/handlers.py
+🔹 СОДЕРЖИМОЕ:
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/support/main_menu/texts.py
+🔹 СОДЕРЖИМОЕ:
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/modules/support/main_menu/keyboards.py
+🔹 СОДЕРЖИМОЕ:
+
+
+--------------------------------------------------
+
+=== ДИРЕКТОРИЯ: /home/REMBOT/core ===
+
+📄 ФАЙЛ: /home/REMBOT/core/auth.py
+🔹 СОДЕРЖИМОЕ:
+from sqlalchemy.ext.asyncio import AsyncSession
+from core.database.crud import get_user_by_telegram_id, update_user
+from core.marzban_api.api import MarzbanAPI
+import logging
+from typing import Optional, Dict, Any
+
+logger = logging.getLogger(__name__)
+
+class AuthService:
+    def __init__(self, marzban_api: MarzbanAPI):
+        self.marzban_api = marzban_api
+
+    async def sync_with_marzban(
+        self, 
+        session: AsyncSession, 
+        telegram_id: int
+    ) -> Dict[str, Any]:
+        result = {
+            "marzban_user_exists": False,
+            "error": None
+        }
+
+        try:
+            user = await get_user_by_telegram_id(session, telegram_id)
+            if not user:
+                result["error"] = "User not found in DB"
+                return result
+
+            # Используем telegram_id если username отсутствует
+            marzban_username = user.username or str(telegram_id)
+            marzban_user = await self.marzban_api.get_user(marzban_username)
+            
+            result["marzban_user_exists"] = marzban_user is not None
+
+        except Exception as e:
+            result["error"] = str(e)
+            logger.error(f"Sync error: {str(e)}", exc_info=True)
+            
+        return result
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/core/filters.py
+🔹 СОДЕРЖИМОЕ:
+from aiogram.filters import BaseFilter
+from aiogram.types import Message, CallbackQuery
+from typing import Union, Optional
+
+class RoleFilter(BaseFilter):
+    def __init__(self, required_role: str):
+        self.required_role = required_role.upper()
+
+    async def __call__(
+        self, 
+        event: Union[Message, CallbackQuery], 
+        role: Optional[str] = None, 
+        **kwargs
+    ) -> bool:
+        return role and role.upper() == self.required_role
+
+class HasAnyRole(BaseFilter):
+    def __init__(self, roles: list | tuple | set):
+        self.allowed_roles = {r.upper() for r in roles}
+
+    async def __call__(
+        self, 
+        event: Union[Message, CallbackQuery], 
+        role: Optional[str] = None, 
+        **kwargs
+    ) -> bool:
+        return role and role.upper() in self.allowed_roles
+
+# Готовые экземпляры фильтров
+IsAdmin = RoleFilter("ADMIN")
+IsSupport = RoleFilter("SUPPORT")
+IsUser = RoleFilter("USER")
+IsBanned = RoleFilter("BANNED")
+IsStaff = HasAnyRole({"ADMIN", "SUPPORT"})
+IsNotBanned = HasAnyRole({"USER", "ADMIN", "SUPPORT"})
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/core/__init__.py
+🔹 СОДЕРЖИМОЕ:
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/core/middleware.py
+🔹 СОДЕРЖИМОЕ:
+from typing import Callable, Dict, Awaitable, Any, Union
+from aiogram import BaseMiddleware
+from aiogram.types import TelegramObject, Message, CallbackQuery, Update
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from core.database.crud import get_user_by_telegram_id, create_user
+from core.database.model import User
+import logging
+
+logger = logging.getLogger(__name__)
+
+class RoleMiddleware(BaseMiddleware):
+    def __init__(self, session_pool: async_sessionmaker[AsyncSession]):
+        super().__init__()
+        self.session_pool = session_pool
+
+    async def __call__(
+        self,
+        handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
+        event: TelegramObject,
+        data: Dict[str, Any]
+    ) -> Any:
+        logger.debug(f"RoleMiddleware processing event: {type(event)}")
+        data.update({"user": None, "role": "USER"})
+
+        # Extract actual event from Update if needed
+        actual_event = event
+        if isinstance(event, Update):
+            actual_event = event.message or event.callback_query
+            if not actual_event:
+                logger.debug("Unsupported Update event type")
+                return await handler(event, data)
+
+        # Check if we have a supported event with from_user
+        if not isinstance(actual_event, (Message, CallbackQuery)) or not actual_event.from_user:
+            logger.debug("Event doesn't have from_user, skipping user processing")
+            return await handler(event, data)
+
+        user = actual_event.from_user
+        telegram_id = user.id
+        logger.debug(f"Processing user with telegram_id: {telegram_id}")
+
+        try:
+            async with self.session_pool() as session:
+                async with session.begin():
+                    # Try to get existing user
+                    db_user = await get_user_by_telegram_id(session, telegram_id)
+                    
+                    # Create new user if doesn't exist
+                    if not db_user:
+                        logger.debug(f"Creating new user for telegram_id: {telegram_id}")
+                        db_user = await create_user(
+                            session=session,
+                            telegram_id=telegram_id,
+                            username=user.username
+                        )
+                        
+                        if not db_user:
+                            logger.error(f"Failed to create user for telegram_id: {telegram_id}")
+                            return await handler(event, data)
+
+                    # Update data for handler
+                    data.update({
+                        "user": db_user,
+                        "role": db_user.role.upper() if db_user else "USER"
+                    })
+                    logger.debug(f"User data updated: {data['role']}")
+
+        except Exception as e:
+            logger.error(f"Error processing user {telegram_id}: {str(e)}", exc_info=True)
+            # Continue with default data (user=None, role=USER)
+        
+        return await handler(event, data)
+
+--------------------------------------------------
+
+=== ДИРЕКТОРИЯ: /home/REMBOT/core/database ===
+
+📄 ФАЙЛ: /home/REMBOT/core/database/model.py
+🔹 СОДЕРЖИМОЕ:
+from datetime import datetime
+from sqlalchemy import (
+    Column, Integer, BigInteger, String, DateTime, 
+    Text, Index, func, ForeignKey, CheckConstraint,
+    UniqueConstraint, Boolean, Numeric
+)
+from sqlalchemy.ext.asyncio import AsyncAttrs
+from sqlalchemy.orm import DeclarativeBase, relationship
+
+class Base(AsyncAttrs, DeclarativeBase):
+    pass
+
+class User(Base):
+    __tablename__ = "users"
+    __table_args__ = (
+        Index('idx_user_telegram_id', 'telegram_id'),
+        Index('idx_user_username', 'username'),
+        CheckConstraint(
+            "role IN ('ADMIN', 'SUPPORT', 'USER', 'BANNED')", 
+            name="check_user_role"
+        ),
+    )
+
+    id = Column(Integer, primary_key=True)
+    telegram_id = Column(BigInteger, unique=True, nullable=False, index=True)
+    username = Column(String(255), nullable=True, index=True)
+    role = Column(String(20), nullable=False, server_default="USER")
+    balance = Column(Numeric(10, 2), default=0, nullable=False)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    last_sync_time = Column(DateTime, nullable=True)
+
+    # Relationships
+    purchased_subscriptions = relationship("PurchasedSubscription", back_populates="user")
+    used_promocodes = relationship("UsedPromocode", back_populates="user")
+
+class PurchasedSubscription(Base):
+    __tablename__ = "purchased_subscriptions"
+    __table_args__ = (
+        Index('idx_purchased_sub_telegram_id', 'telegram_id'),
+        Index('idx_purchased_sub_uuid', 'sub_uuid'),
+    )
+
+    id = Column(Integer, primary_key=True)
+    telegram_id = Column(
+        BigInteger, 
+        ForeignKey("users.telegram_id", ondelete="CASCADE"), 
+        nullable=False, 
+        index=True
+    )
+    sub_uuid = Column(String(255), nullable=False)
+    username = Column(String(255), nullable=False)  # Новое поле
+    purchase_price = Column(Numeric(10, 2), nullable=True)
+    renewal_price = Column(Numeric(10, 2), nullable=True)
+    expired_at = Column(DateTime, nullable=False)
+    last_transfer_time = Column(DateTime, nullable=True)
+    device_removal_count = Column(Integer, default=0, nullable=False)
+    last_removal_reset = Column(DateTime, nullable=True)
+    
+    # Relationship
+    user = relationship("User", back_populates="purchased_subscriptions")
+
+class SubscriptionPlan(Base):
+    __tablename__ = "subscriptions_plan"
+    __table_args__ = (
+        UniqueConstraint('name', name='uq_subscription_plan_name'),
+    )
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255), nullable=False, unique=True)
+    price = Column(Numeric(10, 2), nullable=False)
+    end_date = Column(DateTime, nullable=False)
+
+class Promocode(Base):
+    __tablename__ = "promocodes"
+    __table_args__ = (
+        UniqueConstraint('code', name='uq_promocode_code'),
+        Index('idx_promocode_is_active', 'is_active'),
+    )
+
+    id = Column(Integer, primary_key=True)
+    code = Column(String(50), nullable=False, unique=True)
+    total_uses = Column(Integer, nullable=False)
+    remaining_uses = Column(Integer, nullable=False)
+    uses_per_user = Column(Integer, nullable=False)
+    discount_value = Column(Numeric(10, 2), nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
+    valid_until = Column(DateTime, nullable=False)
+
+class UsedPromocode(Base):
+    __tablename__ = "used_promocodes"
+    __table_args__ = (
+        Index('idx_used_promo_telegram_id', 'telegram_id'),
+        Index('idx_used_promo_promo_id', 'promo_id'),
+    )
+
+    id = Column(Integer, primary_key=True)
+    telegram_id = Column(
+        BigInteger, 
+        ForeignKey("users.telegram_id", ondelete="CASCADE"), 
+        nullable=False, 
+        index=True
+    )
+    promo_id = Column(
+        Integer, 
+        ForeignKey("promocodes.id", ondelete="CASCADE"), 
+        nullable=False, 
+        index=True
+    )
+    valid_until = Column(DateTime)
+    use_status = Column(Boolean, default=True, nullable=False)
+    
+    # Relationships
+    user = relationship("User", back_populates="used_promocodes")
+    promocode = relationship("Promocode")
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/core/database/crud.py
+🔹 СОДЕРЖИМОЕ:
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, update, delete, and_
+from sqlalchemy.orm import selectinload
+from core.database.model import User, PurchasedSubscription, SubscriptionPlan, Promocode, UsedPromocode
+from typing import Optional, List, Union, Dict, Any
+from datetime import datetime, timedelta
+from decimal import Decimal
+import logging
+
+logger = logging.getLogger(__name__)
+
+# ==================== USER OPERATIONS ====================
+
+async def create_user(
+    session: AsyncSession,
+    telegram_id: int,
+    username: Optional[str] = None,
+    balance: Decimal = Decimal('0'),
+    role: str = "USER"
+) -> Optional[User]:
+    """Create new user in database"""
+    try:
+        user = User(
+            telegram_id=telegram_id,
+            username=username,
+            balance=balance,
+            role=role
+        )
+        session.add(user)
+        await session.flush()
+        await session.refresh(user)
+        logger.debug(f"Created user: {user.telegram_id}")
+        return user
+    except Exception as e:
+        logger.error(f"Error creating user {telegram_id}: {str(e)}", exc_info=True)
+        await session.rollback()
+        return None
+
+async def get_user_by_telegram_id(
+    session: AsyncSession,
+    telegram_id: int
+) -> Optional[User]:
+    """Get user by Telegram ID"""
+    try:
+        result = await session.execute(
+            select(User)
+            .where(User.telegram_id == telegram_id)
+        )
+        return result.scalars().first()
+    except Exception as e:
+        logger.error(f"Error getting user {telegram_id}: {str(e)}", exc_info=True)
+        return None
+
+async def update_user_balance(
+    session: AsyncSession,
+    telegram_id: int,
+    amount: Decimal
+) -> bool:
+    """Update user balance"""
+    try:
+        user = await get_user_by_telegram_id(session, telegram_id)
+        if not user:
+            return False
+            
+        user.balance += amount
+        await session.flush()
+        return True
+    except Exception as e:
+        logger.error(f"Error updating balance for {telegram_id}: {str(e)}", exc_info=True)
+        await session.rollback()
+        return False
+
+# ==================== SUBSCRIPTION OPERATIONS ====================
+
+async def update_subscription_transfer(
+    session: AsyncSession,
+    sub_uuid: str,
+    new_telegram_id: int
+) -> bool:
+    """Обновление владельца подписки при передаче"""
+    try:
+        result = await session.execute(
+            update(PurchasedSubscription)
+            .where(PurchasedSubscription.sub_uuid == sub_uuid)
+            .values(
+                telegram_id=new_telegram_id,
+                last_transfer_time=datetime.now()
+            )
+        )
+        await session.commit()
+        return result.rowcount > 0
+    except Exception as e:
+        logger.error(f"Error transferring subscription {sub_uuid}: {str(e)}", exc_info=True)
+        await session.rollback()
+        return False
+
+async def create_or_update_subscription(
+    session: AsyncSession,
+    telegram_id: int,
+    sub_uuid: str,
+    username: str,
+    expired_at: datetime,
+    purchase_price: Optional[Decimal] = None,
+    renewal_price: Optional[Decimal] = None
+) -> Optional[PurchasedSubscription]:
+    """Create or update subscription"""
+    try:
+        subscription = await get_purchased_subscription_by_uuid(session, sub_uuid)
+        
+        if subscription:
+            # Update existing subscription
+            subscription.telegram_id = telegram_id
+            subscription.username = username
+            subscription.expired_at = expired_at
+            if purchase_price is not None:
+                subscription.purchase_price = purchase_price
+            if renewal_price is not None:
+                subscription.renewal_price = renewal_price
+        else:
+            # Create new subscription
+            subscription = PurchasedSubscription(
+                telegram_id=telegram_id,
+                sub_uuid=sub_uuid,
+                username=username,
+                purchase_price=purchase_price,
+                renewal_price=renewal_price,
+                expired_at=expired_at
+            )
+            session.add(subscription)
+        
+        await session.flush()
+        await session.refresh(subscription)
+        return subscription
+    except Exception as e:
+        logger.error(f"Error with subscription {sub_uuid}: {str(e)}", exc_info=True)
+        await session.rollback()
+        return None
+
+async def get_purchased_subscription_by_uuid(
+    session: AsyncSession, 
+    sub_uuid: str
+) -> Optional[PurchasedSubscription]:
+    """Get subscription by UUID"""
+    try:
+        result = await session.execute(
+            select(PurchasedSubscription)
+            .where(PurchasedSubscription.sub_uuid == sub_uuid)
+        )
+        return result.scalars().first()
+    except Exception as e:
+        logger.error(f"Error getting subscription {sub_uuid}: {str(e)}", exc_info=True)
+        return None
+
+async def get_purchased_subscriptions(
+    session: AsyncSession, 
+    telegram_id: int
+) -> List[PurchasedSubscription]:
+    """Get all user subscriptions"""
+    try:
+        result = await session.execute(
+            select(PurchasedSubscription)
+            .where(PurchasedSubscription.telegram_id == telegram_id)
+            .order_by(PurchasedSubscription.expired_at.desc())
+        )
+        return list(result.scalars().all())
+    except Exception as e:
+        logger.error(f"Error getting subscriptions for {telegram_id}: {str(e)}", exc_info=True)
+        return []
+
+async def transfer_subscription_ownership(
+    session: AsyncSession,
+    sub_uuid: str,
+    new_telegram_id: int
+) -> bool:
+    """Transfer subscription to new owner"""
+    try:
+        result = await session.execute(
+            update(PurchasedSubscription)
+            .where(PurchasedSubscription.sub_uuid == sub_uuid)
+            .values(
+                telegram_id=new_telegram_id,
+                last_transfer_time=datetime.now()
+            )
+        )
+        await session.flush()
+        return result.rowcount > 0
+    except Exception as e:
+        logger.error(f"Error transferring subscription {sub_uuid}: {str(e)}", exc_info=True)
+        await session.rollback()
+        return False
+
+async def update_subscription_expiration(
+    session: AsyncSession,
+    sub_uuid: str,
+    new_expiration: datetime
+) -> bool:
+    """Update subscription expiration date"""
+    try:
+        result = await session.execute(
+            update(PurchasedSubscription)
+            .where(PurchasedSubscription.sub_uuid == sub_uuid)
+            .values(expired_at=new_expiration)
+        )
+        await session.flush()
+        return result.rowcount > 0
+    except Exception as e:
+        logger.error(f"Error updating expiration for {sub_uuid}: {str(e)}", exc_info=True)
+        await session.rollback()
+        return False
+
+async def update_device_removal_count(
+    session: AsyncSession,
+    sub_uuid: str,
+    increment: bool = True
+) -> bool:
+    """Update device removal counter"""
+    try:
+        subscription = await get_purchased_subscription_by_uuid(session, sub_uuid)
+        if not subscription:
+            return False
+            
+        if increment:
+            subscription.device_removal_count += 1
+        else:
+            subscription.device_removal_count = 0
+            subscription.last_removal_reset = datetime.now()
+            
+        await session.flush()
+        return True
+    except Exception as e:
+        logger.error(f"Error updating device removal for {sub_uuid}: {str(e)}", exc_info=True)
+        await session.rollback()
+        return False
+
+# ==================== PROMOCODE OPERATIONS ====================
+
+async def get_active_promocode(
+    session: AsyncSession,
+    code: str
+) -> Optional[Promocode]:
+    """Get active promocode"""
+    try:
+        result = await session.execute(
+            select(Promocode)
+            .where(Promocode.code == code)
+            .where(Promocode.is_active == True)
+            .where(Promocode.valid_until >= datetime.now())
+        )
+        return result.scalars().first()
+    except Exception as e:
+        logger.error(f"Error getting promocode {code}: {str(e)}", exc_info=True)
+        return None
+
+async def create_used_promocode(
+    session: AsyncSession,
+    telegram_id: int,
+    promo_id: int,
+    valid_until: Optional[datetime] = None
+) -> Optional[UsedPromocode]:
+    """Create used promocode record"""
+    try:
+        used_promo = UsedPromocode(
+            telegram_id=telegram_id,
+            promo_id=promo_id,
+            valid_until=valid_until
+        )
+        session.add(used_promo)
+        await session.flush()
+        await session.refresh(used_promo)
+        return used_promo
+    except Exception as e:
+        logger.error(f"Error creating used promocode: {str(e)}", exc_info=True)
+        await session.rollback()
+        return None
+
+# ==================== UTILITY FUNCTIONS ====================
+
+async def get_user_full_data(
+    session: AsyncSession,
+    telegram_id: int
+) -> Optional[Dict[str, Any]]:
+    """Get complete user data"""
+    try:
+        user = await get_user_by_telegram_id(session, telegram_id)
+        if not user:
+            return None
+            
+        subscriptions = await get_purchased_subscriptions(session, telegram_id)
+        active_subscriptions = [s for s in subscriptions if s.expired_at > datetime.now()]
+        
+        return {
+            "user": user,
+            "subscriptions": active_subscriptions,
+            "subscriptions_count": len(active_subscriptions)
+        }
+    except Exception as e:
+        logger.error(f"Error getting full data for {telegram_id}: {str(e)}", exc_info=True)
+        return None
+
+
+--------------------------------------------------
+
+📄 ФАЙЛ: /home/REMBOT/core/database/database.py
+🔹 СОДЕРЖИМОЕ:
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.orm import declarative_base
+from dotenv import load_dotenv
+import os  
+
+# Загрузка переменных окружения
+load_dotenv()
+
+# Получаем URL БД из .env
+DATABASE_URL = os.getenv("DATABASE_URL")  # Добавляем эту строку
+
+#Создаем асинхронный движок
+engine = create_async_engine(DATABASE_URL)
+
+Base = declarative_base()
+
+async_session = async_sessionmaker(
+    bind=engine,
+    expire_on_commit=False,
+    class_=AsyncSession
+)
+
+
+--------------------------------------------------
+
+=== ДИРЕКТОРИЯ: /home/REMBOT/core/api ===
+
+📄 ФАЙЛ: /home/REMBOT/core/api/remnawave_client.py
+🔹 СОДЕРЖИМОЕ:
+import os
+import logging
+from typing import Dict, Any, List, Optional
+from uuid import UUID
+from remnawave_api import RemnawaveSDK
+from remnawave_api.models import (
+    TelegramUserResponseDto,
+    UpdateUserRequestDto,
+    UserResponseDto,
+    UserActiveInboundsDto,
+    UserLastConnectedNodeDto,
+    HWIDUserResponseDtoList,
+    HWIDDeleteRequest,
+    HWIDUserResponseDto
+)
+from remnawave_api.exceptions import (
+    ApiError,
+    NotFoundError,
+    BadRequestError,
+    ForbiddenError,
+    UnauthorizedError,
+    ConflictError,
+    ServerError
+)
+from pydantic import ValidationError
+
+logger = logging.getLogger(__name__)
+
+class RemnawaveService:
+    def __init__(self, base_url: str, token: str):
+        """
+        Инициализация клиента Remnawave API
+        :param base_url: Базовый URL API
+        :param token: Токен авторизации
+        """
+        self.client = RemnawaveSDK(base_url=base_url, token=token)
+    
+    async def _transform_user_response(self, user: UserResponseDto) -> Dict[str, Any]:
+        """Преобразование объекта UserResponseDto в словарь"""
+        # Вспомогательная функция для безопасного форматирования даты
+        def format_date(date_field):
+            if date_field:
+                try:
+                    return date_field.strftime("%Y-%m-%d %H:%M:%S")
+                except AttributeError:
+                    return str(date_field)
+            return "N/A"
+        
+        # Вспомогательная функция для безопасного извлечения значений
+        def get_value(field):
+            if field is None:
+                return None
+            try:
+                return field.value
+            except AttributeError:
+                return field
+        
+        # Обрабатываем статус
+        status = get_value(user.status) if user.status else "unknown"
+        
+        # Обрабатываем last_connected_node
+        last_connected_node = "N/A"
+        if user.last_connected_node:
+            try:
+                # Пробуем разные варианты имен атрибутов
+                if hasattr(user.last_connected_node, 'node_name'):
+                    last_connected_node = user.last_connected_node.node_name
+                elif hasattr(user.last_connected_node, 'nodeName'):
+                    last_connected_node = user.last_connected_node.nodeName
+                else:
+                    last_connected_node = str(user.last_connected_node)
+            except Exception:
+                last_connected_node = str(user.last_connected_node)
+        
+        # Обрабатываем активные инбаунды
+        inbounds = ["N/A"]
+        if user.active_user_inbounds:
+            try:
+                inbounds = []
+                for inbound in user.active_user_inbounds:
+                    # Пробуем разные варианты имен атрибутов
+                    tag = inbound.tag if hasattr(inbound, 'tag') else (
+                        inbound.nodeName if hasattr(inbound, 'nodeName') else "Unknown"
+                    )
+                    type_ = inbound.type if hasattr(inbound, 'type') else (
+                        inbound.nodeType if hasattr(inbound, 'nodeType') else "Unknown"
+                    )
+                    inbounds.append(f"{tag} ({type_})")
+            except Exception:
+                inbounds = [str(inbound) for inbound in user.active_user_inbounds]
+        
+        # Обрабатываем happ.crypto_link
+        happ_crypto_link = "N/A"
+        if user.happ:
+            try:
+                # Пробуем разные варианты имен атрибутов
+                if hasattr(user.happ, 'crypto_link'):
+                    happ_crypto_link = user.happ.crypto_link
+                elif hasattr(user.happ, 'cryptoLink'):
+                    happ_crypto_link = user.happ.cryptoLink
+                else:
+                    happ_crypto_link = str(user.happ)
+            except Exception:
+                pass
+        
+        # Логируем атрибуты объекта для отладки
+        logger.debug(f"Атрибуты объекта UserResponseDto: {vars(user)}")
+        
+        # Формируем результат строго по модели с учетом обязательности полей
+        return {
+            # Обязательные поля (без Optional)
+            "uuid": str(user.uuid),
+            "subscription_uuid": str(user.subscription_uuid),
+            "short_uuid": user.short_uuid,
+            "username": user.username,
+            "used_traffic_bytes": user.used_traffic_bytes,
+            "lifetime_used_traffic_bytes": user.lifetime_used_traffic_bytes,
+            "trojan_password": user.trojan_password,
+            "vless_uuid": str(user.vless_uuid),
+            "ss_password": user.ss_password,
+            "subscription_url": user.subscription_url,
+            "created_at": format_date(user.created_at),
+            "updated_at": format_date(user.updated_at),
+            
+            # Опциональные поля (с Optional в модели)
+            "status": status,
+            "data_limit": user.traffic_limit_bytes / (1024 ** 3) if user.traffic_limit_bytes else 0,
+            "traffic_limit_strategy": get_value(user.traffic_limit_strategy) if user.traffic_limit_strategy else "N/A",
+            "expire": format_date(user.expire_at) if user.expire_at else "N/A",
+            "last_connected_node": last_connected_node,
+            "sub_last_opened_at": format_date(user.sub_last_opened_at) if user.sub_last_opened_at else "N/A",
+            "inbounds": inbounds,
+            "sub_last_user_agent": user.sub_last_user_agent or "N/A",
+            "online_at": format_date(user.online_at) if user.online_at else "N/A",
+            "sub_revoked_at": format_date(user.sub_revoked_at) if user.sub_revoked_at else "N/A",
+            "last_traffic_reset_at": format_date(user.last_traffic_reset_at) if user.last_traffic_reset_at else "N/A",
+            "description": user.description or "N/A",
+            "telegram_id": user.telegram_id or "N/A",
+            "email": user.email or "N/A",
+            "hwid_device_limit": user.hwidDeviceLimit or "N/A",
+            "last_triggered_threshold": getattr(user, 'last_triggered_threshold', 0),
+            "happ_crypto_link": happ_crypto_link,
+            "first_connected_at": format_date(getattr(user, 'first_connected', None)) if getattr(user, 'first_connected', None) else "N/A"
+        }
+    
+    async def get_user_by_telegram_id(self, telegram_id: int) -> List[Dict[str, Any]]:
+        """
+        Получение информации о подписках пользователя по Telegram ID
+        :param telegram_id: Идентификатор пользователя в Telegram
+        :return: Список подписок или список с ошибкой
+        """
+        try:
+            if not telegram_id:
+                logger.error("Пустой Telegram ID")
+                return [{"error": "Не указан Telegram ID"}]
+
+            logger.debug(f"Запрос подписок для Telegram ID {telegram_id}")
+            
+            # Делаем запрос к API
+            response: TelegramUserResponseDto = await self.client.users.get_users_by_telegram_id(str(telegram_id))
+            
+            if not response.response:
+                logger.info(f"Подписки для Telegram ID {telegram_id} не найдены")
+                return []
+
+            # Преобразуем ответ API
+            subscriptions = [await self._transform_user_response(user) for user in response.response]
+            
+            logger.info(f"Успешно получено {len(subscriptions)} подписок для {telegram_id}")
+            return subscriptions
+
+        except NotFoundError:
+            logger.warning(f"Пользователь {telegram_id} не найден")
+            return [{"error": "Пользователь не найден"}]
+        except BadRequestError as e:
+            logger.error(f"Ошибка запроса для {telegram_id}: {str(e)}")
+            return [{"error": "Некорректный запрос"}]
+        except ForbiddenError:
+            logger.error(f"Доступ запрещен для {telegram_id}")
+            return [{"error": "Доступ запрещен"}]
+        except UnauthorizedError:
+            logger.error("Невалидный API токен")
+            return [{"error": "Ошибка авторизации API"}]
+        except ServerError as e:
+            logger.error(f"Ошибка сервера: {str(e)}")
+            return [{"error": "Внутренняя ошибка сервера"}]
+        except ApiError as e:
+            logger.error(f"Ошибка API: {str(e)}")
+            return [{"error": f"Ошибка API: {str(e)}"}]
+        except Exception as e:
+            logger.critical(f"Неизвестная ошибка: {str(e)}", exc_info=True)
+            return [{"error": "Неизвестная ошибка"}]
+
+    async def get_subscription_by_uuid(self, subscription_uuid: str) -> Dict[str, Any]:
+        """
+        Получение информации о подписке по UUID
+        :param subscription_uuid: UUID подписки
+        :return: Словарь с данными подписки или ошибкой
+        """
+        try:
+            if not subscription_uuid:
+                logger.error("Пустой UUID подписки")
+                return {"error": "Не указан UUID подписки"}
+
+            logger.debug(f"Запрос подписки по UUID: {subscription_uuid}")
+            
+            # Делаем запрос к API
+            response: UserResponseDto = await self.client.users.get_user_by_uuid(subscription_uuid)
+            
+            # Преобразуем ответ API
+            subscription = await self._transform_user_response(response)
+            
+            logger.info(f"Успешно получена подписка {subscription_uuid}")
+            return subscription
+
+        except NotFoundError:
+            logger.warning(f"Подписка {subscription_uuid} не найдена")
+            return {"error": "Подписка не найдена"}
+        except BadRequestError as e:
+            logger.error(f"Ошибка запроса для UUID {subscription_uuid}: {str(e)}")
+            return {"error": "Некорректный запрос"}
+        except ForbiddenError:
+            logger.error(f"Доступ запрещен для UUID {subscription_uuid}")
+            return {"error": "Доступ запрещен"}
+        except UnauthorizedError:
+            logger.error("Невалидный API токен")
+            return {"error": "Ошибка авторизации API"}
+        except ServerError as e:
+            logger.error(f"Ошибка сервера: {str(e)}")
+            return {"error": "Внутренняя ошибка сервера"}
+        except ApiError as e:
+            logger.error(f"Ошибка API: {str(e)}")
+            return {"error": f"Ошибка API: {str(e)}"}
+        except Exception as e:
+            logger.critical(f"Неизвестная ошибка: {str(e)}", exc_info=True)
+            return {"error": "Неизвестная ошибка"}
+
+    async def update_user(self, user_uuid: str, update_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Обновление данных пользователя по UUID
+        :param user_uuid: UUID пользователя
+        :param update_data: Словарь с данными для обновления
+        :return: Обновленные данные пользователя или словарь с ошибкой
+        """
+        try:
+            if not user_uuid:
+                logger.error("Пустой UUID пользователя")
+                return {"error": "Не указан UUID пользователя"}
+
+            if not update_data:
+                logger.error("Пустые данные для обновления")
+                return {"error": "Не указаны данные для обновления"}
+
+            logger.debug(f"Обновление пользователя с UUID {user_uuid}: {update_data}")
+
+            # Формируем DTO для запроса на обновление
+            update_request = UpdateUserRequestDto(
+                uuid=user_uuid,
+                **update_data
+            )
+
+            # Делаем запрос к API
+            response: UserResponseDto = await self.client.users.update_user(user_uuid, update_request)
+
+            # Преобразуем ответ API
+            updated_user = await self._transform_user_response(response)
+            
+            logger.info(f"Успешно обновлен пользователь с UUID {user_uuid}")
+            return updated_user
+
+        except NotFoundError:
+            logger.warning(f"Пользователь с UUID {user_uuid} не найден")
+            return {"error": "Пользователь не найден"}
+        except BadRequestError as e:
+            logger.error(f"Ошибка запроса для UUID {user_uuid}: {str(e)}")
+            return {"error": "Некорректный запрос"}
+        except ForbiddenError:
+            logger.error(f"Доступ запрещен для UUID {user_uuid}")
+            return {"error": "Доступ запрещен"}
+        except UnauthorizedError:
+            logger.error("Невалидный API токен")
+            return {"error": "Ошибка авторизации API"}
+        except ConflictError:
+            logger.error(f"Конфликт при обновлении пользователя с UUID {user_uuid}")
+            return {"error": "Конфликт данных"}
+        except ServerError as e:
+            logger.error(f"Ошибка сервера: {str(e)}")
+            return {"error": "Внутренняя ошибка сервера"}
+        except ApiError as e:
+            logger.error(f"Ошибка API: {str(e)}")
+            return {"error": f"Ошибка API: {str(e)}"}
+        except Exception as e:
+            logger.critical(f"Неизвестная ошибка: {str(e)}", exc_info=True)
+            return {"error": "Неизвестная ошибка"}
+
+    async def update_user_by_telegram_id(self, telegram_id: int, update_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Обновление данных пользователя по Telegram ID
+        :param telegram_id: Идентификатор пользователя в Telegram
+        :param update_data: Словарь с данными для обновления
+        :return: Обновленные данные пользователя или словарь с ошибкой
+        """
+        try:
+            # Шаг 1: Получаем UUID по Telegram ID
+            subscriptions = await self.get_user_by_telegram_id(telegram_id)
+            
+            # Проверяем, есть ли подписки
+            if not subscriptions or "error" in subscriptions[0]:
+                error_msg = subscriptions[0].get("error", "Пользователь или подписки не найдены")
+                logger.warning(f"Подписки для Telegram ID {telegram_id} не найдены: {error_msg}")
+                return {"error": error_msg}
+
+            # Берем UUID первой подписки
+            user_uuid = subscriptions[0]["uuid"]
+            logger.debug(f"Найден UUID {user_uuid} для Telegram ID {telegram_id}")
+
+            # Шаг 2: Обновляем данные пользователя
+            result = await self.update_user(user_uuid, update_data)
+            return result
+
+        except Exception as e:
+            logger.critical(f"Неизвестная ошибка при обновлении по Telegram ID {telegram_id}: {str(e)}", exc_info=True)
+            return {"error": "Неизвестная ошибка"}
+
+    async def get_connected_devices(self, user_uuid: str) -> List[Dict]:
+        """
+        Получение списка подключённых устройств для подписки.
+        
+        Args:
+            user_uuid: UUID подписки.
+        
+        Returns:
+            List[Dict]: Список устройств или пустой список при ошибке.
+        """
+        try:
+            logger.debug(f"Запрос устройств для подписки {user_uuid}")
+            response: HWIDUserResponseDtoList = await self.client.hwid.get_hwid_user(user_uuid)
+            devices = [
+                {
+                    "hwid": device.hwid,
+                    "user_uuid": str(device.user_uuid),
+                    "platform": device.platform,
+                    "os_version": device.os_version,
+                    "device_model": device.device_model,
+                    "user_agent": device.user_agent,
+                    "created_at": device.created_at,
+                    "updated_at": device.updated_at
+                }
+                for device in response.devices
+            ]
+            logger.debug(f"Получено {len(devices)} устройств для подписки {user_uuid}")
+            return devices
+        except NotFoundError:
+            logger.warning(f"Устройства для подписки {user_uuid} не найдены")
+            return []
+        except BadRequestError as e:
+            logger.error(f"Ошибка запроса для {user_uuid}: {str(e)}")
+            return []
+        except ForbiddenError:
+            logger.error(f"Доступ запрещен для {user_uuid}")
+            return []
+        except UnauthorizedError:
+            logger.error("Невалидный API токен")
+            return []
+        except ServerError as e:
+            logger.error(f"Ошибка сервера: {str(e)}")
+            return []
+        except ApiError as e:
+            logger.error(f"Ошибка API: {str(e)}")
+            return []
+        except Exception as e:
+            logger.critical(f"Неизвестная ошибка при получении устройств для {user_uuid}: {str(e)}", exc_info=True)
+            return []
+
+    async def remove_device(self, user_uuid: str, hwid: str) -> bool:
+        """
+        Удаление устройства из подписки.
+        
+        Args:
+            user_uuid: UUID подписки.
+            hwid: Идентификатор устройства (HWID).
+        
+        Returns:
+            bool: True при успешном удалении, False при ошибке.
+        """
+        try:
+            logger.debug(f"Удаление устройства {hwid} для подписки {user_uuid}")
+            body = HWIDDeleteRequest(hwid=hwid, userUuid=UUID(user_uuid))
+            response: HWIDUserResponseDtoList = await self.client.hwid.delete_hwid_to_user(body)
+            logger.info(f"Устройство {hwid} удалено для подписки {user_uuid}")
+            return True
+        except NotFoundError:
+            logger.warning(f"Устройство {hwid} для подписки {user_uuid} не найдено")
+            return False
+        except BadRequestError as e:
+            logger.error(f"Ошибка запроса для удаления устройства {hwid}: {str(e)}")
+            return False
+        except ForbiddenError:
+            logger.error(f"Доступ запрещен для удаления устройства {hwid}")
+            return False
+        except UnauthorizedError:
+            logger.error("Невалидный API токен")
+            return False
+        except ServerError as e:
+            logger.error(f"Ошибка сервера: {str(e)}")
+            return False
+        except ApiError as e:
+            logger.error(f"Ошибка API: {str(e)}")
+            return False
+        except Exception as e:
+            logger.critical(f"Неизвестная ошибка при удалении устройства {hwid} для {user_uuid}: {str(e)}", exc_info=True)
+            return False
+
+# Инициализация сервиса с параметрами из переменных окружения
+remnawave_service = RemnawaveService(
+    base_url=os.getenv("REMNAWAVE_BASE_URL", "https://api.remnawave.com"),
+    token=os.getenv("REMNAWAVE_TOKEN", "your_api_token_here")
+)
+
+
+--------------------------------------------------
+
